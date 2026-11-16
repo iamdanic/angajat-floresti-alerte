@@ -1,0 +1,53 @@
+name: Alerta joburi Floresti
+
+on:
+  # La fiecare 30 de minute. GitHub foloseste ora UTC si poate intarzia
+  # putin rularea daca sunt multe joburi programate pe platforma.
+  schedule:
+    - cron: '*/30 * * * *'
+  # Buton "Run workflow" din tab-ul Actions, pentru testare manuala.
+  workflow_dispatch:
+
+# Are nevoie de permisiunea de a scrie in repo, ca sa salveze
+# lista joburilor deja anuntate (state/seen.json).
+permissions:
+  contents: write
+
+# Nu rula doua instante in paralel.
+concurrency:
+  group: floresti-alerte
+  cancel-in-progress: false
+
+jobs:
+  verifica:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Descarca repo-ul
+        uses: actions/checkout@v4
+
+      - name: Cauta joburi noi si trimite pe Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 floresti_jobs.py
+
+      # Ruleaza chiar daca pasul de mai devreme a picat, ca sa nu se
+      # piarda mesajele deja trimise cu succes.
+      - name: Salveaza lista de joburi deja anuntate
+        if: always()
+        run: |
+          if [ -f state/seen.json ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state/seen.json
+            if git diff --cached --quiet; then
+              echo "Nimic nou de salvat."
+            else
+              git commit -m "chore: actualizeaza joburile vazute [skip ci]"
+              git push || echo "Push esuat - se reincearca la urmatoarea rulare."
+            fi
+          else
+            echo "state/seen.json inca nu exista."
+          fi
