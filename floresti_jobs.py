@@ -213,6 +213,20 @@ def build_message(job):
     return "\n".join(lines)
 
 
+def build_report(total_jobs, new_count):
+    """Raportul zilnic - se trimite mereu, chiar daca nu e nimic nou."""
+    date_str = time.strftime("%d.%m.%Y", time.gmtime())
+    lines = ["📋 <b>Raport zilic Floresti</b> — {}".format(escape_html(date_str)), ""]
+    if new_count == 0:
+        lines.append("❌ Astazi nu au aparut joburi noi.")
+    else:
+        lines.append(
+            "🆕 <b>{} joburi noi</b> astazi.".format(new_count)
+        )
+    lines.append("Acum sunt <b>{}</b> de joburi in zona.".format(total_jobs))
+    return "\n".join(lines)
+
+
 # --------------------------------------------------------------------------
 # Rulare
 # --------------------------------------------------------------------------
@@ -286,18 +300,35 @@ def main():
     new_jobs.sort(key=lambda j: str(j.get("publishedDate") or ""), reverse=True)
     print("Joburi noi de anuntat: {}".format(len(new_jobs)))
 
-    for job in new_jobs:
-        text = build_message(job)
-        if dry_run:
-            print("-" * 60)
-            print(text)
-            continue
+    report = build_report(len(jobs), len(new_jobs))
 
+    if dry_run:
+        print("=" * 60)
+        print(report)
+        for job in new_jobs:
+            print("-" * 60)
+            print(build_message(job))
+        print("Mod dry-run: nu s-a trimis si nu s-a salvat nimic.")
+        return 0
+
+    # Raportul se trimite MEREU, chiar si cand nu e nimic nou.
+    telegram_api(
+        "sendMessage",
+        {
+            "chat_id": chat_id,
+            "text": report,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        },
+    )
+    print("Raport trimis.")
+
+    for job in new_jobs:
         telegram_api(
             "sendMessage",
             {
                 "chat_id": chat_id,
-                "text": text,
+                "text": build_message(job),
                 "parse_mode": "HTML",
                 "disable_web_page_preview": True,
             },
@@ -308,9 +339,6 @@ def main():
         save_state(seen)
         time.sleep(SEND_DELAY)
         print("Trimis: {}".format(job.get("occupationName")))
-
-    if dry_run:
-        print("Mod dry-run: nu s-a trimis si nu s-a salvat nimic.")
 
     return 0
 

@@ -1,10 +1,12 @@
 name: Alerta joburi Floresti
 
 on:
-  # La fiecare 30 de minute. GitHub foloseste ora UTC si poate intarzia
-  # putin rularea daca sunt multe joburi programate pe platforma.
+  # O data pe zi. GitHub foloseste ora UTC -> 10:00 UTC = 12:00 (EET, ora de iarna
+  # in R. Moldova). ATENTIE: trecerea la ora de vara (ultima duminica din martie)
+  # face sa fie 13:00 ora locala; atunci schimba 10 cu 9. Inapoi la ora de iarna
+  # (ultima duminica din octombrie) pune 10 la loc.
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '0 10 * * *'
   # Buton "Run workflow" din tab-ul Actions, pentru testare manuala.
   workflow_dispatch:
 

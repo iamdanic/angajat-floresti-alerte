@@ -1,8 +1,11 @@
 # Alerte Telegram pentru joburi noi în Florești (angajat.md)
 
-Script care verifică la fiecare 30 de minute [angajat.md](https://angajat.md/jobOffers)
-pentru **joburi noi în raionul Florești** și îți trimite câte un mesaj pe Telegram
-pentru fiecare ofertă apărută.
+Script care verifică **în fiecare zi la ora 12:00** [angajat.md](https://angajat.md/jobOffers)
+pentru **joburi noi în raionul Florești** și îți trimite un **raport zilnic** pe Telegram:
+
+- dacă au apărut joburi noi → raportul zilnic + câte un mesaj pentru fiecare job nou
+- dacă **nu** a apărut nimic → primești oricum mesajul
+  „❌ Astăzi nu au apărut joburi noi. Acum sunt 57 de joburi în zona."
 
 - Fără login, fără chei de API — folosește API-ul public al site-ului.
 - Doar biblioteca standard Python — **nu e nevoie de `pip install`**.
@@ -67,11 +70,28 @@ git push -u origin main
 
 Tab-ul **Actions → Alerta joburi Floresti → Run workflow → Run workflow**.
 
-La **prima** rulare primești un singur mesaj:
+La **prima** rulare primești un singur mesaj de confirmare:
 > ✅ Monitorizare pornita pentru Floresti. Acum sunt 57 de joburi in zona.
 
-Restul de 57 de joburi existente **nu** se trimit. De la rularea următoare
-încolo primești câte un mesaj doar pentru joburile **noi**:
+Restul de 57 de joburi existente **nu** se trimit.
+
+**De atunci, în fiecare zi la 12:00** primești raportul. Când **nu** e nimic nou:
+
+```
+📋 Raport zilic Floresti — 17.11.2026
+
+❌ Astazi nu au aparut joburi noi.
+Acum sunt 57 de joburi in zona.
+```
+
+Când **sunt** joburi noi, întâi vine raportul, apoi câte un mesaj per job:
+
+```
+📋 Raport zilic Floresti — 17.11.2026
+
+🆕 2 joburi noi astazi.
+Acum sunt 57 de joburi in zona.
+```
 
 ```
 🆕 Job nou in Floresti
@@ -109,25 +129,35 @@ if str(j.get("childRegionNameRo") or "").strip().upper() != "FLORESTI":
     continue
 ```
 
-## Cum schimbi intervalul
+## Cum schimbi ora
 
 În `.github/workflows/alerte-floresti.yml`:
 
 ```yaml
 schedule:
-  - cron: '*/15 * * * *'   # la fiecare 15 minute
+  - cron: '0 10 * * *'   # 10:00 UTC = 12:00 ora Moldovei
 ```
 
-**Contorizare minute GitHub** (repo privat: 2.000 min/lună gratuit):
+Formatul e `minutul ora * * *` și e în **UTC**. Moldova e UTC+2 iarna,
+UTC+3 vara, așa că:
 
-| Interval | Rulări/lună | Minute aprox. |
+| Vrei ora locală | iarnă (UTC+2) | vara (UTC+3) |
 |---|---|---|
-| 30 min | ~1.440 | ~1.440 ✅ |
-| 15 min | ~2.880 | ~2.880 ⚠️ peste limită |
+| 08:00 | `0 6 * * *` | `0 5 * * *` |
+| **12:00** ← acum | `0 10 * * *` | `0 9 * * *` |
+| 20:00 | `0 18 * * *` | `0 17 * * *` |
 
-La 15 minute fă repo-ul **public** (informațiile despre joburi sunt publice
-oricum; token-ul rămâne ascuns în secrets). Notificările se activează doar
-pe **branch-ul implicit** (`main`).
+⚠️ **Trecerea la ora de vară** (ultima duminică din martie) face ca
+`0 10 * * *` să trimită la 13:00 local. Schimbă `10` cu `9` atunci și pune
+`10` înapoi la ultima duminică din octombrie. Restul nu se atinge.
+
+Poți pune și mai des — ex. `0 */6 * * *` = de 4 ori pe zi. GitHub poate
+întârzia rularea programată cu câteva minute în zilele aglomerate.
+
+**Contorizare minute GitHub** (repo privat: 2.000 min/lună gratuit):
+o rulare pe zi ≈ **30 min/lună**, deci ești departe de limită.
+
+Notificările se pornesc doar pe **branch-ul implicit** (`main`).
 
 ## Rulare locală (opțional)
 
@@ -148,9 +178,11 @@ $env:TELEGRAM_CHAT_ID   = "123456789"
 
 | Fișier | Rol |
 |---|---|
-| `floresti_jobs.py` | scriptul: interoghează API-ul, compară, trimite |
-| `.github/workflows/alerte-floresti.yml` | programarea la 30 min + salvarea stării |
+| `floresti_jobs.py` | scriptul: interoghează API-ul, compară, trimite raportul |
+| `.github/workflows/alerte-floresti.yml` | programarea zilnică la 12:00 + salvarea stării |
 | `state/seen.json` | id-urile joburilor deja anunțate (se creează singur) |
+| `ia-chat-id.ps1` | îți afișează `TELEGRAM_CHAT_ID` (doar pentru configurare) |
+| `verifica-telegram.ps1` | testează tokenul + chat_id-ul (doar pentru configurare) |
 
 ## Note
 
