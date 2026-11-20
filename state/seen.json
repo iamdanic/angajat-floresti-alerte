@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-19T18:47:25Z",
+  "updatedAt": "2026-11-20T18:14:54Z",
   "region": "FLORESTI",
   "seen": [
     "06a8a78d-830a-4967-93ef-0ca6017d7104",
@@ -36,8 +36,10 @@
     "5cbb0c2b-555e-4405-b403-6e5ca7d78440",
     "5fcf1e03-1404-40b3-8d90-2d424da58cdf",
     "66fdb69f-2500-4a2c-9daf-b45c5cdde950",
+    "70fe650c-57dc-48ae-a532-8229847e1b61",
     "73ab6169-a7e5-4932-a7b4-f931b97d68e0",
     "77f16bac-7cb8-4963-83f2-607c89e9a84a",
+    "7b7ec293-47a1-4f8b-b281-97bf02b77fb5",
     "7f6c9be2-9e7c-4bd7-8da1-48e5b2f44435",
     "82cbb64f-1cfd-4bb4-8e8b-b673a1c9ac21",
     "8921cf48-0c09-4306-9c5b-14ebadbd2392",
@@ -56,6 +58,7 @@
     "a99dce94-f0ba-4bfa-bc98-1ff63b3db13d",
     "aaf028a8-5093-42d9-accd-72fa9c0cafb4",
     "ad3413a2-b5b5-4e70-98d0-319fbf80c4ec",
+    "b1810cde-5f08-444e-9200-599b178c4bd0",
     "b1c7d9a9-ad45-4382-8114-67463ade602a",
     "bab850fe-8420-417f-9d22-2c15b04883bb",
     "bf35b39c-d6e4-4475-99b1-015cb7668986",
@@ -71,6 +74,8 @@
     "e5ead5f3-52ad-4d61-8a7d-40d1ac9267f2",
     "e67a0edc-c87c-418c-aaf1-93e030ebea20",
     "e7764b24-c3ce-4290-8cd9-5ef35333e8a8",
-    "eae7fd8f-6543-41f5-ac44-05831f6d5e4c"
+    "eae7fd8f-6543-41f5-ac44-05831f6d5e4c",
+    "ed1b3b5a-82e1-43f6-a4af-b68e86e5e5f6",
+    "f7d03d92-6e8f-4ae6-83f5-d582e4b82b9e"
   ]
 }
